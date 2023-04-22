@@ -1,109 +1,111 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>依赖项格式转换器</title>
-</head>
-<body>
-	<h1>依赖项格式转换器</h1>
-	<div>
-		<label for="gradleOutput">Gradle 格式：</label>
-		<textarea id="depInput" name="depInput" rows="20" cols="80">implementation 'org.springframework.boot:spring-boot-starter-graphql:6.5.2'
+    <head>
+        <title>gradle2maven依赖项格式转换器</title>
+    </head>
+    <body>
+        <h1>gradle2maven依赖项格式转换器</h1>
+        <div>
+            <label for="gradleOutput">Gradle 格式：</label>
+            <textarea id="depInput" name="depInput" rows="20" cols="80">implementation 'org.springframework.boot:spring-boot-starter-graphql:6.5.2'
 	implementation   group: 'com.github.dozermapper',   'name': 'dozer-core', version: '6.5.2'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation("org.springframework.boot:spring-boot-starter-security")
 	   </textarea>
-		<button onclick="convert()">转换</button>
-		<label for="mavenOutput">Maven 格式：</label>
-		<textarea id="mavenOutput" name="mavenOutput" rows="20" cols="80"></textarea>
-	</div>
-	<script >
-		function gradleToMaven(gradleDep) {
-		  // 定义正则表达式解析 Gradle 格式的字符串
-		  //var pattern = /(\'|\")(.*):(.*):(.*)(\'|\")/g;
-		  if(gradleDep.includes(",")){
-			  var groupId;
-			  var artifactId;
-			  var version;
-			  var arr=gradleDep.split(",");
-			  arr.forEach(function(line) {
-				var arr2=split2(line);
-				if(arr2[0].includes("group")){
-					groupId=arr2[1].replaceAll(/(\'|\")/g,"")
-				}
-				if(arr2[0].includes("name")){
-					artifactId=arr2[1].replaceAll(/(\'|\")/g,"")
-				}
-				if(arr2[0].includes("version")){
-					version=arr2[1].replaceAll(/(\'|\")/g,"")
-				}
-			  });
-			  // 构建 Maven 格式的字符串
-			    var mavenDep = '<dependency>\n';
-			    mavenDep += '    <groupId>' + groupId + '</groupId>\n';
-			    mavenDep += '    <artifactId>' + artifactId + '</artifactId>\n';
-			    if(version){
-				    mavenDep += '    <version>' + version + '</version>\n';
-			    }
-			    mavenDep += '</dependency>\n';
-			    return mavenDep;
-		  }else{
-			  var pattern = /(\'|\")([^:]+):([^:]+)(:(.*))*(\'|\")/g;
-			  var matches = pattern.exec(gradleDep);
-			  if (matches !== null) {
-				//console.log(matches)
-			    // 提取 groupId、artifactId 和 version
-			    var groupId = matches[2];
-			    var artifactId = matches[3];
-			    var version = matches[5];
-			    
-			    // 构建 Maven 格式的字符串
-			    var mavenDep = '<dependency>\n';
-			    mavenDep += '    <groupId>' + groupId + '</groupId>\n';
-			    mavenDep += '    <artifactId>' + artifactId + '</artifactId>\n';
-			    if(version){
-				    mavenDep += '    <version>' + version + '</version>\n';
-			    }
-			    mavenDep += '</dependency>\n';
-			    return mavenDep;
-			  }
-		  }
-		  
-		  return gradleDep;
-		}
+            <button onclick="convert()">转换</button>
+            <label for="mavenOutput">Maven 格式：</label>
+            <textarea id="mavenOutput" name="mavenOutput" rows="20" cols="80"></textarea>
+        </div>
+        <script>
+            function gradleToMaven(gradleDep) {
+                // 定义正则表达式解析 Gradle 格式的字符串
+                //var pattern = /(\'|\")(.*):(.*):(.*)(\'|\")/g;
+                if (gradleDep.includes(",")) {
+                    var groupId;
+                    var artifactId;
+                    var version;
+                    var arr = gradleDep.split(",");
+                    arr.forEach(function(line) {
+                        var arr2 = split2(line);
+                        if (arr2[0].includes("group")) {
+                            groupId = arr2[1].replaceAll(/(\'|\")/g, "")
+                        }
+                        if (arr2[0].includes("name")) {
+                            artifactId = arr2[1].replaceAll(/(\'|\")/g, "")
+                        }
+                        if (arr2[0].includes("version")) {
+                            version = arr2[1].replaceAll(/(\'|\")/g, "")
+                        }
+                    });
+                    // 构建 Maven 格式的字符串
+                    var mavenDep = '<dependency>\n';
+                    mavenDep += '    <groupId>' + groupId + '</groupId>\n';
+                    mavenDep += '    <artifactId>' + artifactId + '</artifactId>\n';
+                    if (version) {
+                        mavenDep += '    <version>' + version + '</version>\n';
+                    }
+                    mavenDep += '</dependency>\n';
+                    return mavenDep;
+                } else {
+                    var pattern = /(\'|\")([^:]+):([^:]+)(:(.*))*(\'|\")/g;
+                    var matches = pattern.exec(gradleDep);
+                    if (matches !== null) {
+                        //console.log(matches)
+                        // 提取 groupId、artifactId 和 version
+                        var groupId = matches[2];
+                        var artifactId = matches[3];
+                        var version = matches[5];
 
-		function splitByBlankOnce(line){
-			var arr=line.trim().split(/(\s+)/)
-			var arr2=[];
-			arr2[0]=arr[0];
-			arr2[1]=arr.slice(2,arr.length).join('');
-			//console.log(arr2)
-			return arr2;
-		}
-		function split2(line){
-			var arr=line.trim().split(/(:|\s)+/)
-			var arr2=[];
-			arr2[0]=arr[0];
-			arr2[1]=arr.slice(2,arr.length).join('');
-			//console.log(arr2)
-			return arr2;
-		}
+                        // 构建 Maven 格式的字符串
+                        var mavenDep = '<dependency>\n';
+                        mavenDep += '    <groupId>' + groupId + '</groupId>\n';
+                        mavenDep += '    <artifactId>' + artifactId + '</artifactId>\n';
+                        if (version) {
+                            mavenDep += '    <version>' + version + '</version>\n';
+                        }
+                        mavenDep += '</dependency>\n';
+                        return mavenDep;
+                    }
+                }
 
-		function convert() {
-			// 读取输入框中的内容
-			var depInput = document.getElementById("depInput").value.trim();
-			var lines=depInput.split("\n");
+                return gradleDep;
+            }
 
-			var mavenFormat="";
-			// 逐行输出到控制台
-			lines.forEach(function(line) {
-			    mavenFormat+=gradleToMaven(splitByBlankOnce(line)[1]);
-			});
-			
-			// 转换 Maven 格式，将完整的依赖项转换为坐标和版本号
-			
-			// 输出转换后的结果
-			document.getElementById("mavenOutput").value = mavenFormat;
-		}
+            function splitByBlankOnce(line) {
+                var arr = line.trim().split(/(\s+)/)
+                var arr2 = [];
+                arr2[0] = arr[0];
+                arr2[1] = arr.slice(2, arr.length).join('');
+                //console.log(arr2)
+                return arr2;
+            }
 
-	</script>
-</body>
+            function split2(line) {
+                var arr = line.trim().split(/(:|\s)+/)
+                var arr2 = [];
+                arr2[0] = arr[0];
+                arr2[1] = arr.slice(2, arr.length).join('');
+                //console.log(arr2)
+                return arr2;
+            }
+
+            function convert() {
+                // 读取输入框中的内容
+                var depInput = document.getElementById("depInput").value.trim();
+                var lines = depInput.split("\n");
+
+                var mavenFormat = "";
+                // 逐行输出到控制台
+                lines.forEach(function(line) {
+                    line = line.replaceAll(/\(|\)/g, " ")
+                    mavenFormat += gradleToMaven(splitByBlankOnce(line)[1]);
+                });
+
+                // 转换 Maven 格式，将完整的依赖项转换为坐标和版本号
+
+                // 输出转换后的结果
+                document.getElementById("mavenOutput").value = mavenFormat;
+            }
+        </script>
+    </body>
 </html>
